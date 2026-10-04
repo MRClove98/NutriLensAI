@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>NutriLens AI — Blue Edition</title>
+<meta name="theme-color" content="#04111f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NutriLens AI">
+<meta name="mobile-web-app-capable" content="yes">
+
+<style>
+:root{
+  --bg:#04111f;
+  --bg2:#071a2e;
+  --card:rgba(8,28,50,.86);
+  --card2:rgba(12,42,72,.88);
+  --text:#f4f9ff;
+  --muted:#91abc4;
+  --accent:#38bdf8;
+  --accent2:#2563eb;
+  --accent3:#60a5fa;
+  --success:#34d399;
+  --danger:#fb7185;
+  --border:rgba(120,190,255,.16);
+  --border-strong:rgba(96,165,250,.32);
+  --shadow:0 20px 60px rgba(0,8,20,.42);
+  --glow:0 0 45px rgba(37,99,235,.18)
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:
+radial-gradient(circle at 10% 0%,rgba(56,189,248,.15),transparent 30%),
+radial-gradient(circle at 90% 0%,rgba(74,222,128,.13),transparent 30%),var(--bg);color:var(--text)}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{max-width:1450px;margin:auto;padding:22px}
+.hero{padding:34px;border:1px solid var(--border);border-radius:28px;background:linear-gradient(135deg,rgba(74,222,128,.14),rgba(56,189,248,.11));box-shadow:var(--shadow);margin-bottom:18px}
+.hero h1{font-size:clamp(34px,5vw,58px);margin:0;letter-spacing:-2px}.hero p{color:var(--muted);margin:8px 0 0}
+.tabs{display:flex;gap:8px;overflow:auto;padding:4px;margin-bottom:18px}.tab{border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);padding:12px 16px;border-radius:14px;white-space:nowrap}.tab.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#031019;font-weight:800}
+.page{display:none}.page.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.card{background:rgba(13,27,46,.82);border:1px solid var(--border);border-radius:22px;padding:20px;box-shadow:var(--shadow);backdrop-filter:blur(12px)}
+.stat{display:flex;gap:14px;align-items:center}.icon{font-size:30px}.stat small{display:block;color:var(--muted)}.stat strong{font-size:25px}
+.section{margin-top:16px}.section h2{margin:0 0 14px}.muted{color:var(--muted)}
+.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
+input,select{width:100%;padding:12px 13px;border-radius:12px;border:1px solid var(--border);background:#091727;color:var(--text);outline:none}
+input:focus,select:focus{border-color:var(--accent2)}
+.btn{border:0;border-radius:12px;padding:12px 16px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#031019;font-weight:800}
+.btn.secondary{background:rgba(255,255,255,.07);color:var(--text);border:1px solid var(--border)}
+.btn.danger{background:rgba(251,113,133,.15);color:#fecdd3;border:1px solid rgba(251,113,133,.25)}
+.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+.message{margin-top:12px;min-height:22px;color:var(--accent)}
+.food-results{max-height:300px;overflow:auto;margin-top:8px;border:1px solid var(--border);border-radius:14px}
+.food-option{padding:11px 13px;border-bottom:1px solid var(--border);cursor:pointer}.food-option:last-child{border-bottom:0}.food-option:hover{background:rgba(255,255,255,.07)}
+.nutrient-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.nutrient{padding:14px;border-radius:14px;background:rgba(255,255,255,.05)}.nutrient small{color:var(--muted);display:block}.nutrient b{font-size:19px}
+table{width:100%;border-collapse:collapse}.table-wrap{overflow:auto}th,td{padding:11px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}th{color:var(--muted);font-size:13px}
+canvas{width:100%;height:320px;background:rgba(255,255,255,.025);border-radius:18px}
+.progress{height:10px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden}.progress span{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0}
+.ai{border-left:3px solid var(--accent);padding-left:15px}.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{padding:7px 10px;border-radius:999px;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.18);color:#bae6fd}
+.empty{text-align:center;padding:35px;color:var(--muted)}
+.footer{margin-top:18px;text-align:center;color:var(--muted);font-size:12px}
+@media(max-width:650px){.app{padding:12px}.hero{padding:24px}.card{padding:16px}.tabs{margin-inline:-4px}}
+
+/* iPad / Safari compatibility */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+body{-webkit-tap-highlight-color:transparent;overscroll-behavior-x:none;}
+button,input,select,textarea{-webkit-appearance:none;appearance:none;}
+button{touch-action:manipulation;min-height:44px;}
+input,select,textarea{min-height:44px;}
+.tabbar{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.tabbar::-webkit-scrollbar{display:none;}
+.card,.panel,.hero{overflow:hidden;}
+canvas{max-width:100%;height:auto;touch-action:pan-y;}
+@media (max-width:900px){
+ .app{padding:14px;}
+ .hero{padding:24px 18px;border-radius:22px;}
+ .hero h1{font-size:clamp(30px,7vw,48px);}
+ .grid,.stats,.cards{grid-template-columns:1fr!important;}
+ .two,.three{grid-template-columns:1fr!important;}
+ .actions{flex-wrap:wrap;}
+ .actions button{flex:1 1 180px;}
+ .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+ table{min-width:620px;}
+}
+@media (max-width:600px){
+ .app{padding:10px;}
+ .hero{padding:20px 15px;}
+ .tabs button{white-space:nowrap;padding:12px 14px;}
+ .card{padding:15px;}
+}
+@media (pointer:coarse){
+ button,.tab,.tabs button{min-height:46px;}
+ input,select,textarea{font-size:16px;}
+}
+
+/* ===== NutriLens Blue Edition ===== */
+html{
+  background:#04111f;
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+  scroll-behavior:smooth;
+}
+body{
+  min-height:100vh;
+  min-height:100dvh;
+  background:
+    radial-gradient(circle at 8% -5%,rgba(56,189,248,.20),transparent 28%),
+    radial-gradient(circle at 92% 0%,rgba(37,99,235,.20),transparent 30%),
+    radial-gradient(circle at 50% 100%,rgba(30,64,175,.13),transparent 35%),
+    linear-gradient(145deg,#03101d 0%,#06182a 48%,#04111f 100%);
+  color:var(--text);
+  -webkit-tap-highlight-color:transparent;
+}
+body:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);
+  background-size:42px 42px;
+  mask-image:linear-gradient(to bottom,black,transparent 75%);
+}
+.app{
+  max-width:1500px;
+  padding:
+    max(18px,env(safe-area-inset-top))
+    max(18px,env(safe-area-inset-right))
+    max(24px,env(safe-area-inset-bottom))
+    max(18px,env(safe-area-inset-left));
+}
+.hero{
+  position:relative;
+  overflow:hidden;
+  border:1px solid var(--border-strong);
+  background:
+    linear-gradient(135deg,rgba(14,73,125,.72),rgba(8,34,61,.84) 55%,rgba(12,47,95,.68)),
+    radial-gradient(circle at 85% 20%,rgba(56,189,248,.22),transparent 35%);
+  box-shadow:var(--shadow),var(--glow);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
+.hero:after{
+  content:"";
+  position:absolute;
+  width:220px;height:220px;
+  right:-80px;top:-100px;
+  border-radius:50%;
+  background:rgba(56,189,248,.12);
+  filter:blur(4px);
+}
+.hero h1{
+  position:relative;
+  z-index:1;
+  background:linear-gradient(100deg,#fff,#d9f2ff 45%,#60a5fa);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.hero p{position:relative;z-index:1}
+.tabs{
+  position:sticky;
+  top:max(8px,env(safe-area-inset-top));
+  z-index:20;
+  padding:7px;
+  border:1px solid var(--border);
+  border-radius:18px;
+  background:rgba(3,17,31,.82);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  box-shadow:0 10px 30px rgba(0,0,0,.24);
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  border-color:transparent;
+  background:transparent;
+  transition:transform .18s ease,background .18s ease,box-shadow .18s ease;
+}
+.tab:hover{background:rgba(56,189,248,.08);transform:translateY(-1px)}
+.tab.active{
+  background:linear-gradient(135deg,#38bdf8,#2563eb);
+  color:#fff;
+  box-shadow:0 8px 24px rgba(37,99,235,.28);
+}
+.card{
+  background:linear-gradient(145deg,rgba(9,32,56,.90),rgba(5,23,41,.88));
+  border-color:var(--border);
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.card:hover{
+  border-color:rgba(96,165,250,.27);
+  box-shadow:var(--shadow),0 0 25px rgba(37,99,235,.08);
+}
+.stat strong{
+  background:linear-gradient(90deg,#fff,#bfe8ff);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.icon{
+  width:52px;height:52px;
+  display:grid;place-items:center;
+  border-radius:16px;
+  background:linear-gradient(145deg,rgba(56,189,248,.16),rgba(37,99,235,.16));
+  border:1px solid rgba(96,165,250,.20);
+}
+input,select,textarea{
+  background:rgba(2,15,29,.78);
+  border-color:var(--border);
+  color:var(--text);
+  -webkit-appearance:none;
+  appearance:none;
+  border-radius:14px;
+  transition:border-color .18s,box-shadow .18s,background .18s;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:#38bdf8;
+  box-shadow:0 0 0 3px rgba(56,189,248,.12);
+  background:rgba(4,24,43,.95);
+}
+.btn{
+  background:linear-gradient(135deg,#38bdf8,#2563eb);
+  color:#fff;
+  box-shadow:0 8px 22px rgba(37,99,235,.22);
+  transition:transform .16s,box-shadow .16s,filter .16s;
+}
+.btn:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 11px 28px rgba(37,99,235,.30)}
+.btn:active{transform:translateY(0) scale(.985)}
+.btn.secondary{
+  background:rgba(96,165,250,.08);
+  color:#dcefff;
+  border-color:var(--border);
+}
+.btn.danger{background:rgba(251,113,133,.10)}
+.food-results{
+  background:rgba(2,15,29,.82);
+  -webkit-overflow-scrolling:touch;
+}
+.food-option:hover{background:rgba(56,189,248,.09)}
+.nutrient{
+  background:linear-gradient(145deg,rgba(56,189,248,.07),rgba(37,99,235,.045));
+  border:1px solid rgba(96,165,250,.10);
+}
+.nutrient b{color:#dff5ff}
+.progress{
+  background:rgba(255,255,255,.07);
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.3);
+}
+.progress span{
+  background:linear-gradient(90deg,#38bdf8,#2563eb);
+  box-shadow:0 0 12px rgba(56,189,248,.35);
+}
+.ai{
+  border-left-color:#38bdf8;
+  background:linear-gradient(90deg,rgba(56,189,248,.06),transparent);
+}
+.chip{
+  background:rgba(56,189,248,.09);
+  border-color:rgba(56,189,248,.20);
+  color:#bae6fd;
+}
+canvas{
+  border:1px solid rgba(96,165,250,.10);
+  background:linear-gradient(180deg,rgba(56,189,248,.035),rgba(255,255,255,.012));
+}
+table th{color:#9bc5e8}
+table tr:hover td{background:rgba(56,189,248,.035)}
+.message{color:#67e8f9}
+.footer{padding-bottom:env(safe-area-inset-bottom)}
+
+@media (min-width:900px){
+  .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media (min-width:1200px){
+  .app{padding-left:30px;padding-right:30px}
+}
+@media (max-width:900px){
+  .app{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+  .tabs{margin-left:-2px;margin-right:-2px}
+  .actions .btn{flex:1 1 170px}
+}
+@media (orientation:landscape) and (max-height:700px){
+  .hero{padding:20px 24px}
+  .hero h1{font-size:36px}
+  .tabs{top:5px}
+}
+@media (pointer:coarse){
+  button,.tab,.food-option{min-height:46px}
+  input,select,textarea{font-size:16px;min-height:46px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="hero">
+    <h1>🥗 NutriLens AI</h1>
+    <p>Nutrition tracking • Data science • Pattern analysis • Personal food insights</p>
+  </header>
+
+  <nav class="tabs" id="tabs"></nav>
+
+  <main>
+    <section class="page active" id="dashboard">
+      <div class="grid" id="stats"></div>
+      <div class="card section">
+        <h2>Today's nutrition</h2>
+        <div class="nutrient-grid" id="todayNutrients"></div>
+      </div>
+      <div class="card section">
+        <h2>Nutrition pattern</h2><canvas id="dailyChart"></canvas>
+      </div>
+    </section>
+
+    <section class="page" id="add">
+      <div class="card">
+        <h2>➕ Add food</h2>
+        <div class="formgrid">
+          <div><label>Search food</label><input id="foodSearch" placeholder="e.g. chicken, rice, apple"></div>
+          <div><label>Meal</label><select id="meal"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select></div>
+          <div><label>Servings</label><input id="servings" type="number" min=".1" step=".1" value="1"></div>
+          <div><label>Date</label><input id="foodDate" type="date"></div>
+        </div>
+        <div id="foodResults" class="food-results"></div>
+        <div class="card section" id="selectedFood"><div class="empty">Choose a food to see its nutrients.</div></div>
+        <div class="actions"><button class="btn" id="addBtn">Add Food</button><button class="btn secondary" id="clearSelection">Clear</button></div>
+        <div class="message" id="addMessage"></div>
+      </div>
+    </section>
+
+    <section class="page" id="log">
+      <div class="card">
+        <h2>📋 Food log</h2>
+        <div class="table-wrap"><table><thead><tr><th>#</th><th>Date</th><th>Meal</th><th>Food</th><th>Servings</th><th>Protein</th><th>Carbs</th><th>Fat</th><th>Fiber</th><th></th></tr></thead><tbody id="logBody"></tbody></table></div>
+      </div>
+    </section>
+
+    <section class="page" id="analytics">
+      <div class="card"><h2>📊 History</h2><canvas id="historyChart"></canvas></div>
+      <div class="card section"><h2>Food variety</h2><div id="variety"></div></div>
+    </section>
+
+    <section class="page" id="ai">
+      <div class="card">
+        <h2>🤖 NutriLens AI</h2>
+        <p class="muted">Transparent nutrient-profile analysis. This describes mathematical patterns, not health rankings.</p>
+        <div id="aiOutput"></div>
+      </div>
+      <div class="card section">
+        <h2>🔎 Food similarity</h2>
+        <div class="formgrid"><div><label>Food</label><select id="similarFood"></select></div></div>
+        <div id="similarOutput" class="section"></div>
+      </div>
+    </section>
+
+    <section class="page" id="predictions">
+      <div class="card">
+        <h2>🔮 Seven-day pattern prediction</h2>
+        <p class="muted">A simple transparent trend model based on your logged history. More days of data generally make a trend more meaningful.</p>
+        <canvas id="predictionChart"></canvas>
+        <div class="table-wrap section"><table><thead><tr><th>Date</th><th>Protein</th><th>Carbs</th><th>Fat</th><th>Fiber</th></tr></thead><tbody id="predictionBody"></tbody></table></div>
+      </div>
+    </section>
+
+    <section class="page" id="hydration">
+      <div class="card">
+        <h2>💧 Hydration</h2>
+        <div class="stat"><span class="icon">💧</span><div><small>Logged today</small><strong id="waterDisplay">0 ml</strong></div></div>
+        <div class="actions"><button class="btn" onclick="addWater(250)">+250 ml</button><button class="btn" onclick="addWater(500)">+500 ml</button><button class="btn" onclick="addWater(750)">+750 ml</button><button class="btn secondary" onclick="resetWater()">Reset</button></div>
+      </div>
+    </section>
+
+    <section class="page" id="custom">
+      <div class="card">
+        <h2>⚙️ Create custom food</h2>
+        <div class="formgrid">
+          <div><label>Name</label><input id="cName"></div><div><label>Category</label><input id="cCategory" value="Custom"></div>
+          <div><label>Calories</label><input id="cCalories" type="number" value="0"></div><div><label>Protein (g)</label><input id="cProtein" type="number" value="0"></div>
+          <div><label>Carbs (g)</label><input id="cCarbs" type="number" value="0"></div><div><label>Fat (g)</label><input id="cFat" type="number" value="0"></div>
+          <div><label>Fiber (g)</label><input id="cFiber" type="number" value="0"></div><div><label>Sugar (g)</label><input id="cSugar" type="number" value="0"></div>
+          <div><label>Sodium (mg)</label><input id="cSodium" type="number" value="0"></div><div><label>Vitamin C (mg)</label><input id="cVitaminC" type="number" value="0"></div>
+          <div><label>Calcium (mg)</label><input id="cCalcium" type="number" value="0"></div><div><label>Iron (mg)</label><input id="cIron" type="number" value="0"></div>
+        </div>
+        <div class="actions"><button class="btn" onclick="createCustomFood()">Create Food</button></div>
+        <div class="message" id="customMessage"></div>
+      </div>
+    </section>
+
+    <section class="page" id="settings">
+      <div class="card">
+        <h2>⚙️ Data & privacy</h2>
+        <p class="muted">Your NutriLens data stays in this browser using localStorage. No account or backend is required.</p>
+        <div class="actions">
+          <button class="btn" onclick="exportJSON()">Export JSON</button>
+          <button class="btn secondary" onclick="exportCSV()">Export CSV</button>
+          <button class="btn secondary" onclick="document.getElementById('importFile').click()">Import JSON</button>
+          <button class="btn danger" onclick="clearAllData()">Delete all data</button>
+          <input type="file" id="importFile" accept=".json" hidden>
+        </div>
+        <div class="message" id="settingsMessage"></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="footer"><span style="display:inline-block;margin-bottom:8px;padding:5px 10px;border-radius:999px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.16);color:#9bdcff">🔵 Blue Edition • iPad Optimized</span><br>NutriLens AI is an educational nutrition-tracking and data-analysis tool. It is not medical advice.</div>
+</div>
+
+<script>
+const NUTRIENTS=["calories","protein","carbs","fat","fiber","sugar","sodium","vitamin_c","calcium","iron"];
+const foods=[
+["Apple","Fruit",95,.5,25,.3,4.4,19,2,8,5,.1],["Banana","Fruit",105,1.3,27,.4,3.1,14,1,10,6,.3],
+["Orange","Fruit",62,1.2,15,.2,3.1,12,0,52,52,.1],["Strawberries","Fruit",49,1,12,.5,3,7,1,89,24,.7],
+["Blueberries","Fruit",84,1.1,21,.5,3.6,15,1,14,9,.2],["Grapes","Fruit",69,.7,18,.2,.9,16,2,4,10,.4],
+["Watermelon","Fruit",46,.9,12,.2,.6,9,2,12,7,.2],["Pineapple","Fruit",82,.9,22,.2,2.3,16,2,48,21,.3],
+["Mango","Fruit",99,1.4,25,.6,2.6,23,2,60,18,.2],["Kiwi","Fruit",42,.8,10,.4,2.1,6,2,64,23,.2],
+["Pear","Fruit",101,.6,27,.3,5.5,17,2,8,17,.2],["Peach","Fruit",59,1.4,14,.4,2.3,13,0,10,9,.3],
+["Papaya","Fruit",59,.9,15,.2,2.3,11,1,88,31,.2],["Guava","Fruit",68,2.6,14,1,5.4,9,3,228,18,.3],
+["Avocado","Fruit",240,3,13,22,10,1,11,10,29,.7],
+["Broccoli","Vegetable",55,3.7,11,.6,5.1,2,64,89,62,1],["Carrot","Vegetable",41,.9,10,.2,2.8,5,69,6,33,.3],
+["Spinach","Vegetable",23,2.9,3.6,.4,2.2,.4,79,28,99,2.7],["Potato","Vegetable",161,4.3,37,.2,4.7,2,15,20,25,1.9],
+["Sweet Potato","Vegetable",103,2.3,24,.1,3.8,7,41,22,30,.8],["Tomato","Vegetable",32,1.6,7,.4,2.2,5,5,25,18,.5],
+["Cucumber","Vegetable",16,.7,4,.1,.5,2,2,3,16,.3],["Bell Pepper","Vegetable",31,1,6,.3,2.1,4,2,128,12,.4],
+["Corn","Vegetable",96,3.4,21,1.5,2.4,5,1,7,3,.5],["Peas","Vegetable",84,5.4,15,.4,5.7,6,2,40,25,1.5],
+["Mushrooms","Vegetable",22,3.1,3.3,.3,1,2,5,2,3,.5],["Lettuce","Vegetable",15,1.4,3,.2,1.3,1,28,9,36,.9],
+["Chicken Breast","Protein",165,31,0,3.6,0,0,74,0,15,1],["Salmon","Protein",208,20,0,13,0,0,59,0,9,.5],
+["Tuna","Protein",132,29,0,1.3,0,0,47,0,10,1],["Beef","Protein",250,26,0,17,0,0,72,0,18,2.6],
+["Turkey","Protein",135,30,0,1.5,0,0,55,0,15,1],["Shrimp","Protein",99,24,.2,.3,0,0,111,0,70,.5],
+["Tofu","Protein",94,10,2.4,5.3,.4,.6,7,0,35,1.4],["Lentils","Protein",230,18,40,.8,15.6,4,4,3,19,6.6],
+["Chickpeas","Protein",269,15,45,4.2,12.5,8,24,4,49,4.7],["Egg","Protein",78,6.3,.6,5.3,0,.6,62,0,25,.9],
+["Milk","Dairy",122,8,12,5,0,12,105,0,276,0],["Greek Yogurt","Dairy",100,10,4,5,0,4,36,0,110,.1],
+["Cheddar Cheese","Dairy",113,7,.4,9.3,0,.1,176,0,200,.2],["Soy Milk","Dairy Alternative",80,7,4,4,1,3,85,0,300,1],
+["White Rice","Grains",205,4.3,45,.4,.6,.1,2,0,16,2],["Brown Rice","Grains",216,5,45,1.8,3.5,.7,10,0,20,1.8],
+["Oats","Grains",150,5,27,3,4,1,2,0,50,1.7],["Whole Wheat Bread","Grains",100,4,18,1.5,3,2,170,0,40,1.2],
+["Pasta","Grains",200,7,42,1.3,2.5,2,1,0,20,1.8],["Quinoa","Grains",222,8,39,3.6,5.2,1.6,13,0,31,2.8],
+["Almonds","Nuts",164,6,6,14,3.5,1.2,0,0,76,1],["Peanuts","Nuts",166,7,6,14,2.4,1.4,2,0,26,1.3],
+["Walnuts","Nuts",185,4.3,3.9,18.5,1.9,.7,1,0,44,.8],["Chia Seeds","Seeds",138,4.7,12,8.7,10.6,.8,2,2,179,2.2],
+["Popcorn","Snack",93,3.1,18,1.1,3.5,.2,1,0,2,.9],["Dark Chocolate","Snack",170,2,13,12,3,7,5,0,20,2],
+["Hummus","Snack",70,2,5,5,1.5,.5,130,2,20,.7],["Orange Juice","Drink",112,1.7,26,.5,.5,21,2,124,25,.5],
+["Smoothie","Drink",180,5,30,4,4,20,50,50,150,1],["Chicken Sandwich","Meal",350,27,35,12,4,5,700,8,100,2.2],
+["Chicken Salad","Meal",280,30,15,12,5,5,450,30,100,2.5],["Fried Rice","Meal",330,10,45,13,2,4,700,10,50,2],
+["Sushi","Meal",250,12,40,5,2,4,500,5,30,1.5],["Pizza","Meal",285,12,36,10,2,4,650,8,200,2],
+["Curry","Meal",350,20,30,18,5,5,600,20,100,3],["Pad Thai","Meal",350,15,48,12,3,8,700,5,80,2],
+["Chicken Rice","Meal",420,28,50,12,3,3,650,5,80,2.5],["Porridge","Meal",180,7,30,4,3,4,150,0,80,1.5],
+["Fruit Salad","Meal",120,2,30,.5,5,20,5,80,40,.5]
+];
+
+let storage={getItem(k){try{return localStorage.getItem(k)}catch(e){return null}},setItem(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+let db=JSON.parse(storage.getItem("nutrilens_db")||"null");
+let logs=JSON.parse(storage.getItem("nutrilens_logs")||"[]");
+let water=JSON.parse(storage.getItem("nutrilens_water")||"0");
+db=db||foods.map(f=>obj(f));
+function obj(f){let o={food:f[0],category:f[1]};NUTRIENTS.forEach((n,i)=>o[n]=Number(f[i+2]||0));return o}
+function save(){storage.setItem("nutrilens_db",JSON.stringify(db));storage.setItem("nutrilens_logs",JSON.stringify(logs));storage.setItem("nutrilens_water",JSON.stringify(water))}
+function today(){return new Date().toISOString().slice(0,10)}
+document.getElementById("foodDate").value=today();
+
+const tabs=[["dashboard","🏠 Dashboard"],["add","➕ Add Food"],["log","📋 Food Log"],["analytics","📊 Analytics"],["ai","🤖 AI Analysis"],["predictions","🔮 Predictions"],["hydration","💧 Hydration"],["custom","⚙️ Custom Food"],["settings","🔒 Data"]];
+const tabsEl=document.getElementById("tabs");
+tabs.forEach(([id,name],i)=>{let b=document.createElement("button");b.className="tab"+(i===0?" active":"");b.textContent=name;b.onclick=()=>showPage(id,b);tabsEl.appendChild(b)});
+function showPage(id,button){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));button.classList.add("active");renderAll()}
+
+let selected=null;
+const search=document.getElementById("foodSearch");
+search.oninput=()=>renderFoodResults();
+function renderFoodResults(){
+ const q=search.value.toLowerCase().trim();
+ const arr=db.filter(x=>!q||x.food.toLowerCase().includes(q)||x.category.toLowerCase().includes(q)).slice(0,30);
+ document.getElementById("foodResults").innerHTML=arr.map((f,i)=>`<div class="food-option" data-name="${encodeURIComponent(f.food)}"><b>${f.food}</b><span class="muted"> • ${f.category}</span></div>`).join("")||`<div class="empty">No foods found.</div>`;
+ document.querySelectorAll(".food-option").forEach(e=>e.onclick=()=>selectFood(decodeURIComponent(e.dataset.name)));
+}
+function selectFood(name){selected=db.find(x=>x.food===name);search.value=name;renderFoodResults();renderSelected()}
+function renderSelected(){
+ if(!selected){document.getElementById("selectedFood").innerHTML=`<div class="empty">Choose a food to see its nutrients.</div>`;return}
+ document.getElementById("selectedFood").innerHTML=`<h3>🍎 ${selected.food}</h3><p class="muted">${selected.category}</p><div class="nutrient-grid">${NUTRIENTS.map(n=>`<div class="nutrient"><small>${label(n)}</small><b>${fmt(selected[n])}${unit(n)}</b></div>`).join("")}</div>`;
+}
+function label(n){return ({calories:"Calories",protein:"Protein",carbs:"Carbohydrates",fat:"Fat",fiber:"Fiber",sugar:"Sugar",sodium:"Sodium",vitamin_c:"Vitamin C",calcium:"Calcium",iron:"Iron"})[n]}
+function unit(n){return n==="calories"?"":(["sodium","vitamin_c","calcium"].includes(n)?" mg":" g")}
+function fmt(x){return Number(x).toFixed(1).replace(".0","")}
+document.getElementById("addBtn").onclick=()=>{
+ if(!selected){msg("addMessage","Select a food first.");return}
+ let s=Math.max(.1,Number(document.getElementById("servings").value)||1),date=document.getElementById("foodDate").value||today();
+ let r={id:Date.now(),date,meal:document.getElementById("meal").value,food:selected.food,category:selected.category,servings:s};
+ NUTRIENTS.forEach(n=>r[n]=selected[n]*s);logs.push(r);save();msg("addMessage",`✅ Added ${selected.food}.`);renderAll();
+};
+document.getElementById("clearSelection").onclick=()=>{selected=null;search.value="";renderFoodResults();renderSelected()};
+function msg(id,text){document.getElementById(id).textContent=text;setTimeout(()=>{if(document.getElementById(id))document.getElementById(id).textContent=""},3000)}
+
+function renderAll(){renderDashboard();renderLog();renderAnalytics();renderAI();renderPredictions();renderSimilarSelect();document.getElementById("waterDisplay").textContent=water.toLocaleString()+" ml"}
+function renderDashboard(){
+ let t=logs.filter(x=>x.date===today()), sum=n=>t.reduce((a,x)=>a+Number(x[n]||0),0);
+ document.getElementById("stats").innerHTML=[
+  ["🍎","Foods",new Set(t.map(x=>x.food)).size],["🥗","Categories",new Set(t.map(x=>x.category)).size],
+  ["🍽️","Meals",new Set(t.map(x=>x.meal)).size],["💧","Water",water.toLocaleString()+" ml"]
+ ].map(x=>`<div class="card stat"><span class="icon">${x[0]}</span><div><small>${x[1]}</small><strong>${x[2]}</strong></div></div>`).join("");
+ document.getElementById("todayNutrients").innerHTML=["protein","carbs","fat","fiber"].map(n=>`<div class="nutrient"><small>${label(n)}</small><b>${fmt(sum(n))} g</b></div>`).join("");
+ drawBar("dailyChart",["Protein","Carbs","Fat","Fiber"],["protein","carbs","fat","fiber"].map(sum),"Today's nutrient pattern");
+}
+function renderLog(){
+ document.getElementById("logBody").innerHTML=logs.length?logs.slice().reverse().map((x,ri)=>{let i=logs.length-1-ri;return `<tr><td>${i}</td><td>${x.date}</td><td>${x.meal}</td><td>${x.food}</td><td>${x.servings}</td><td>${fmt(x.protein)} g</td><td>${fmt(x.carbs)} g</td><td>${fmt(x.fat)} g</td><td>${fmt(x.fiber)} g</td><td><button class="btn danger" onclick="removeLog(${i})">Delete</button></td></tr>`}).join(""):`<tr><td colspan="10"><div class="empty">No food logged yet.</div></td></tr>`;
+}
+function removeLog(i){logs.splice(i,1);save();renderAll()}
+function renderAnalytics(){
+ let dates=[...new Set(logs.map(x=>x.date))].sort();
+ let series=["protein","carbs","fat","fiber"].map(n=>dates.map(d=>logs.filter(x=>x.date===d).reduce((a,x)=>a+x[n],0)));
+ drawLine("historyChart",dates,series,["Protein","Carbs","Fat","Fiber"],"Nutrition history");
+ let foods=new Set(logs.map(x=>x.food)).size,cats=new Set(logs.map(x=>x.category)).size;
+ document.getElementById("variety").innerHTML=`<div class="nutrient-grid"><div class="nutrient"><small>Unique foods</small><b>${foods}</b></div><div class="nutrient"><small>Categories</small><b>${cats}</b></div><div class="nutrient"><small>Log entries</small><b>${logs.length}</b></div></div>`;
+}
+function renderAI(){
+ let groups={};db.forEach(f=>{groups[f.category]=(groups[f.category]||0)+1});
+ let used=[...new Set(logs.map(x=>x.food))];
+ document.getElementById("aiOutput").innerHTML=`<div class="ai"><h3>Pattern summary</h3><p>You have logged <b>${logs.length}</b> entries across <b>${used.length}</b> different foods.</p><div class="chips">${Object.entries(groups).map(([k,v])=>`<span class="chip">${k}: ${v}</span>`).join("")}</div><p class="muted">NutriLens groups foods by their recorded nutrient profiles. It does not score foods as “good” or “bad”.</p></div>`;
+}
+function renderSimilarSelect(){let s=document.getElementById("similarFood"),old=s.value;s.innerHTML=db.map(f=>`<option>${f.food}</option>`).join("");if(db.some(f=>f.food===old))s.value=old;renderSimilar()}
+document.getElementById("similarFood").onchange=renderSimilar;
+function renderSimilar(){
+ let name=document.getElementById("similarFood").value,f=db.find(x=>x.food===name);if(!f)return;
+ let vals=db.map(x=>({f:x,d:dist(f,x)})).sort((a,b)=>a.d-b.d).slice(1,7);
+ document.getElementById("similarOutput").innerHTML=`<div class="chips">${vals.map(x=>`<span class="chip">${x.f.food}</span>`).join("")}</div>`;
+}
+function dist(a,b){return Math.sqrt(NUTRIENTS.reduce((s,n)=>s+Math.pow((Number(a[n])-Number(b[n]))/(Number(a[n])+Number(b[n])+1),2),0))}
+function renderPredictions(){
+ let dates=[...new Set(logs.map(x=>x.date))].sort(),body=document.getElementById("predictionBody");
+ if(dates.length<3){body.innerHTML=`<tr><td colspan="5" class="muted">Log food on at least 3 different days to generate a trend.</td></tr>`;drawLine("predictionChart",[],[],[],"Prediction");return}
+ let vals={};["protein","carbs","fat","fiber"].forEach(n=>vals[n]=dates.map(d=>logs.filter(x=>x.date===d).reduce((a,x)=>a+x[n],0)));
+ let pred={};Object.keys(vals).forEach(n=>pred[n]=linearPredict(vals[n],7));
+ let out=[];for(let i=0;i<7;i++){let d=new Date(dates[s.length-1]);d.setDate(d.getDate()+i+1);out.push([d.toISOString().slice(0,10),...["protein","carbs","fat","fiber"].map(n=>Math.max(0,pred[n][i]))])}
+ body.innerHTML=out.map(r=>`<tr>${r.map((v,i)=>`<td>${i?Number(v).toFixed(1):v}</td>`).join("")}</tr>`).join("");
+ drawLine("predictionChart",out.map(x=>x[0]),["protein","carbs","fat","fiber"].map((_,i)=>out.map(x=>x[i+1])),["Protein","Carbs","Fat","Fiber"],"Seven-day pattern prediction");
+}
+function linearPredict(a,count){let n=a.length,x=a.map((_,i)=>i),mx=x.reduce((p,c)=>p+c,0)/n,my=a.reduce((p,c)=>p+c,0)/n;let slope=x.reduce((s,v,i)=>s+(v-mx)*(a[i]-my),0)/(x.reduce((s,v)=>s+(v-mx)**2,0)||1),intercept=my-slope*mx;return Array.from({length:count},(_,i)=>intercept+slope*(n+i))}
+function drawBar(id,labels,data,title){drawChart(id,labels,[data],[""],title,"bar")}
+function drawLine(id,labels,series,names,title){drawChart(id,labels,series,names,title,"line")}
+function drawChart(id,labels,series,names,title,type){
+ let c=document.getElementById(id);if(!c)return;let dpr=devicePixelRatio||1,w=c.clientWidth||700,h=320;c.width=w*dpr;c.height=h*dpr;let ctx=c.getContext("2d");ctx.scale(dpr,dpr);ctx.clearRect(0,0,w,h);
+ ctx.fillStyle="#edf7ff";ctx.font="700 16px system-ui";ctx.fillText(title,18,25);if(!labels.length)return;
+ let pad={l:48,r:20,t:45,b:42},cw=w-pad.l-pad.r,ch=h-pad.t-pad.b,max=Math.max(...series.flat(),1)*1.15;
+ ctx.strokeStyle="rgba(255,255,255,.10)";ctx.fillStyle="#91a5ba";ctx.font="12px system-ui";
+ for(let i=0;i<=4;i++){let y=pad.t+ch*i/4;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();ctx.fillText(Math.round(max*(1-i/4)),8,y+4)}
+ if(type==="bar"){let gap=10,bw=(cw-gap*(labels.length+1))/labels.length;series[0].forEach((v,i)=>{let x=pad.l+gap+i*(bw+gap),bh=v/max*ch;ctx.fillStyle="#4ade80";ctx.fillRect(x,pad.t+ch-bh,bw,bh);ctx.fillStyle="#91a5ba";ctx.fillText(labels[i],x,pad.t+ch+20)})}
+ else {let colors=["#4ade80","#38bdf8","#fbbf24","#fb7185"];series.forEach((arr,j)=>{ctx.strokeStyle=colors[j%colors.length];ctx.lineWidth=2.5;ctx.beginPath();arr.forEach((v,i)=>{let x=pad.l+(labels.length===1?0:i/(labels.length-1))*cw,y=pad.t+ch-v/max*ch;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke()});labels.forEach((v,i)=>{if(i%Math.max(1,Math.ceil(labels.length/6))===0){let x=pad.l+(labels.length===1?0:i/(labels.length-1))*cw;ctx.fillStyle="#91a5ba";ctx.fillText(v,x-20,pad.t+ch+20)}});names.forEach((n,i)=>{ctx.fillStyle=colors[i%colors.length];ctx.fillRect(pad.l+i*85,36,10,10);ctx.fillStyle="#91a5ba";ctx.fillText(n,pad.l+i*85+15,46)})}
+}
+function addWater(n){water+=n;save();renderAll()}function resetWater(){water=0;save();renderAll()}
+function createCustomFood(){
+ let name=document.getElementById("cName").value.trim();if(!name){msg("customMessage","Enter a food name.");return}if(db.some(x=>x.food.toLowerCase()===name.toLowerCase())){msg("customMessage","That food already exists.");return}
+ let ids=["cCategory","cCalories","cProtein","cCarbs","cFat","cFiber","cSugar","cSodium","cVitaminC","cCalcium","cIron"],v=ids.map(id=>document.getElementById(id).value);
+ let o={food:name,category:v[0]||"Custom"};NUTRIENTS.forEach((n,i)=>o[n]=Number(v[i+1])||0);db.push(o);save();renderAll();msg("customMessage",`✅ Created ${name}.`)
+}
+function exportJSON(){download("nutrilens-data.json",JSON.stringify({logs,db,water},null,2),"application/json")}
+function exportCSV(){let cols=["date","meal","food","category","servings",...NUTRIENTS],rows=[cols,...logs.map(x=>cols.map(c=>x[c]))];download("nutrilens-food-log.csv",rows.map(r=>r.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\n"),"text/csv")}
+function download(name,data,type){let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+document.getElementById("importFile").onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(Array.isArray(x.logs))logs=x.logs;if(Array.isArray(x.db))db=x.db;if(typeof x.water==="number")water=x.water;save();renderAll();msg("settingsMessage","✅ Imported successfully.")}catch{msg("settingsMessage","⚠️ Invalid JSON file.")}};r.readAsText(f)}
+function clearAllData(){if(!confirm("Delete all NutriLens data?"))return;logs=[];water=0;db=foods.map(f=>obj(f));save();renderAll();msg("settingsMessage","All logged data was deleted.")}
+renderFoodResults();renderAll();window.addEventListener("resize",renderAll);
+</script>
+</body>
+</html>
